@@ -1,4 +1,3 @@
-const express = require('express');
 const logger = require('./utils/logger');
 const connectDB = require('./utils/db');
 const app = require('./app');
