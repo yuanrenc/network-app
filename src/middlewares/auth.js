@@ -11,6 +11,7 @@ module.exports = async (req, res, next) => {
     // console.log(token);
     const decode = jwt.verify(token, process.env.SECRETE);
     req.userId = decode.userId;
+    // console.log('middleware', req.userId);
     next();
   } catch (error) {
     console.log(error.message);
