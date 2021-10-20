@@ -1,10 +1,9 @@
 const Profile = require('../models/profile');
 const Joi = require('joi');
-const normalizeUrl = require('normalize-url');
 
 const joiSchema = Joi.object({
   status: Joi.string().required(),
-  skill: Joi.required()
+  skills: Joi.required()
 });
 
 const getUserProfile = async (req, res, next) => {
@@ -23,11 +22,12 @@ const getUserProfile = async (req, res, next) => {
   }
 };
 
-const createProfile = async (res, req, next) => {
+const createProfile = async (req, res, next) => {
   try {
+    if (!req.body) return res.status(404).json('Please enter your profile');
     const {
-      website,
       skills,
+      website,
       youtube,
       twitter,
       instagram,
@@ -35,10 +35,9 @@ const createProfile = async (res, req, next) => {
       facebook,
       // spread the rest of the fields we don't need to check
       ...rest
-    } = req.body;
+    } = await joiSchema.validateAsync(req.body, { allowUnknown: true });
     const socialFields = {
       website,
-      skills,
       youtube,
       twitter,
       instagram,
@@ -46,11 +45,22 @@ const createProfile = async (res, req, next) => {
       facebook
     };
 
-    for (const [key, value] of Object.entries(socialFields)) {
-      if (value && value.length > 0) {
-        socialFields[key] = normalizeUrl(value, { forceHTTPS: true });
-      }
-    }
+    // console.log(skills);
+    const skillsArray = skills.split(',').map((skill) => skill.trim());
+    // console.log(skillsArray);
+    const profileFields = {
+      user: req.userId,
+      skills: skillsArray,
+      ...rest
+    };
+
+    profileFields.social = socialFields;
+    let profile = await Profile.findOneAndUpdate(
+      { user: req.userId },
+      { $set: profileFields },
+      { new: true, upsert: true }
+    );
+    return res.status(200).json(profile);
   } catch (error) {
     console.log(error.message);
     return res.status(400).json(error.message);
