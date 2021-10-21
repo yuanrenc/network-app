@@ -1,9 +1,16 @@
-const Profile = require('../models/profile');
-const Joi = require('joi');
+const Profile = require('../models/Profile');
+const User = require('../models/User');
+const Joi = require('joi').extend(require('@joi/date'));
 
 const joiSchema = Joi.object({
   status: Joi.string().required(),
   skills: Joi.required()
+});
+
+const experienceSchema = Joi.object({
+  title: Joi.string().required(),
+  company: Joi.string().required(),
+  from: Joi.date().format('MM/YYYY').required()
 });
 
 const getUserProfile = async (req, res, next) => {
@@ -102,9 +109,47 @@ const getProfileById = async (req, res, next) => {
   } catch (error) {}
 };
 
+const deleteProfileAndUser = async (req, res, next) => {
+  try {
+    // @todo remove users posts;
+    await Profile.findOneAndRemove({ user: req.userId });
+    await User.findOneAndRemove({ _id: req.userId });
+    return res.status(200).send('User deleted');
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).send('Something wrong happened.');
+  }
+};
+
+const updateExperiences = async (req, res, next) => {
+  try {
+    // console.log(req.body);
+    const { title, company, from, location, to, current, description } =
+      await experienceSchema.validateAsync(req.body, { allowUnknown: true });
+    const profile = await Profile.findOne({ user: req.userId });
+    const newExp = {
+      title,
+      company,
+      from,
+      location,
+      to,
+      current,
+      description
+    };
+    profile.experience.unshift(newExp);
+    await profile.save();
+    res.json(profile);
+  } catch (error) {
+    console.log(error.message);
+    return res.status(400).json(error.message);
+  }
+};
+
 module.exports = {
   getUserProfile,
   createProfile,
   getAllProfile,
-  getProfileById
+  getProfileById,
+  deleteProfileAndUser,
+  updateExperiences
 };
