@@ -8,6 +8,7 @@ const joiSchema = Joi.object({
 
 const getUserProfile = async (req, res, next) => {
   try {
+    // console.log(req.userId);
     const profile = await Profile.findOne({ user: req.userId }).populate(
       'user',
       ['username', 'avatar']
@@ -67,4 +68,43 @@ const createProfile = async (req, res, next) => {
   }
 };
 
-module.exports = { getUserProfile, createProfile };
+const getAllProfile = async (req, res, next) => {
+  try {
+    const profile = await Profile.find().populate('user', [
+      'username',
+      'avatar'
+    ]);
+    res.json(profile);
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).send('Server Error;');
+  }
+};
+
+const getProfileById = async (req, res, next) => {
+  try {
+    console.log(req.params.userId);
+    try {
+      const profile = await Profile.findOne({
+        user: req.params.userId
+      }).populate('user', ['username', 'avatar']);
+      if (!profile) {
+        return res.status(404).send(`Profile not found.`);
+      }
+      return res.json(profile);
+    } catch (error) {
+      console.log(error.message);
+      if (err.kind === 'ObjectId') {
+        return res.status(404).send(`Profile not found.`);
+      }
+      res.status(400).send('Server Error;');
+    }
+  } catch (error) {}
+};
+
+module.exports = {
+  getUserProfile,
+  createProfile,
+  getAllProfile,
+  getProfileById
+};
