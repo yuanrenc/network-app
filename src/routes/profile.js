@@ -7,15 +7,20 @@ const {
   getAllProfile,
   getProfileById,
   deleteProfileAndUser,
-  updateExperiences
+  updateExperiences,
+  deleteExperience,
+  updateEducation,
+  deleteEducation
 } = require('../controllers/profileController');
 
 router.get('/', auth, getAllProfile);
 router.delete('/', auth, deleteProfileAndUser);
 router.get('/me', auth, getUserProfile);
-router.put('/experience', auth, updateExperiences);
-// router.get('/:userId', auth, getProfileById);
+router.put('/experience/', auth, updateExperiences);
+router.put('/education/', auth, updateEducation);
+router.get('/:userId', auth, getProfileById);
+router.delete('/experience/:expId', auth, deleteExperience);
+router.delete('/education/:eduId', auth, deleteEducation);
 router.post('/', auth, createProfile);
-router.route('/:userId').get(auth, getProfileById);
 
 module.exports = router;

@@ -13,6 +13,14 @@ const experienceSchema = Joi.object({
   from: Joi.date().format('MM/YYYY').required()
 });
 
+const educationSchema = Joi.object({
+  school: Joi.string().required(),
+  degree: Joi.string().required(),
+  fieldofstudy: Joi.string().required(),
+  from: Joi.date().format('MM/YYYY').required(),
+  to: Joi.date().format('MM/YYYY')
+});
+
 const getUserProfile = async (req, res, next) => {
   try {
     // console.log(req.userId);
@@ -145,11 +153,74 @@ const updateExperiences = async (req, res, next) => {
   }
 };
 
+const deleteExperience = async (req, res, next) => {
+  try {
+    const expId = req.params.expId;
+    const profile = await Profile.findOne({ user: req.userId });
+    const removeIndex = profile.experience
+      .map((item) => item.id)
+      .indexOf(expId);
+    if (removeIndex === -1) {
+      return res.status(404).send('This experience did not exist.');
+    }
+    profile.experience.splice(removeIndex, 1);
+    await profile.save();
+    return res.status(200).json('Experience deleted successfully.');
+  } catch (error) {
+    console.log(error.message);
+    return res.status(400).json(error.message);
+  }
+};
+
+const updateEducation = async (req, res, next) => {
+  try {
+    // console.log(req.body);
+    const { school, degree, fieldofstudy, from, to, current, description } =
+      await educationSchema.validateAsync(req.body, { allowUnknown: true });
+    const profile = await Profile.findOne({ user: req.userId });
+    const newEdu = {
+      school,
+      degree,
+      fieldofstudy,
+      from,
+      to,
+      current,
+      description
+    };
+    profile.education.unshift(newEdu);
+    await profile.save();
+    res.json(profile);
+  } catch (error) {
+    console.log(error.message);
+    return res.status(400).json(error.message);
+  }
+};
+
+const deleteEducation = async (req, res, next) => {
+  try {
+    const expId = req.params.eduId;
+    const profile = await Profile.findOne({ user: req.userId });
+    const removeIndex = profile.education.map((item) => item.id).indexOf(expId);
+    if (removeIndex === -1) {
+      return res.status(404).send('This education experience did not exist.');
+    }
+    profile.education.splice(removeIndex, 1);
+    await profile.save();
+    return res.status(200).json('Education experience deleted successfully.');
+  } catch (error) {
+    console.log(error.message);
+    return res.status(400).json(error.message);
+  }
+};
+
 module.exports = {
   getUserProfile,
   createProfile,
   getAllProfile,
   getProfileById,
   deleteProfileAndUser,
-  updateExperiences
+  updateExperiences,
+  deleteExperience,
+  updateEducation,
+  deleteEducation
 };
