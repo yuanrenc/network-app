@@ -38,7 +38,6 @@ router.post('/', async (req, res, next) => {
         password,
         hashedPassword
       );
-      console.log(passwordComparedResult);
 
       if (passwordComparedResult === false) {
         return res.status(400).json('Email or password incorrect');
