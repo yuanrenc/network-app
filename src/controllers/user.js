@@ -52,16 +52,19 @@ const updateUser = async (req, res, next) => {
 const uploadAvatarById = async (req, res, next) => {
   const params = {
     Bucket: 'networkavatar-colin-v1',
-    Key: req.userId,
+    Key: `${req.userId}.jpg`,
     Body: req.file.buffer
   };
+  let data = await s3.upload(params).promise();
+  const { Location } = data;
+  console.log(`File Upload Success:${Location}`);
+  let user = await User.findOneAndUpdate(
+    { _id: req.userId },
+    { avatar: Location },
+    { new: true, upsert: true }
+  );
 
-  s3.upload(params, function (err, data) {
-    if (err) {
-      throw err;
-    }
-    console.log(`File uploaded successfully:${data.Location}`);
-  });
+  return res.status(200).json(user);
 };
 
 module.exports = { updateUser, uploadAvatarById };

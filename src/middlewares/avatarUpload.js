@@ -27,12 +27,8 @@ const uploadAvatar = (req, res, next) => {
 };
 
 const resizeUserAvatar = catchAsync(async (req, res, next) => {
-  console.log('test');
-  console.log(req.file);
   if (!req.file) return next();
-  const { id } = req.params;
-  req.file.filename = `${id}.jpg`;
-  await sharp(req.file.buffer)
+  req.file.buffer = await sharp(req.file.buffer)
     .resize(500, 500)
     .toFormat('jpg')
     .jpeg({ quality: 90 })
