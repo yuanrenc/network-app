@@ -7,7 +7,9 @@ const {
   getPostsById,
   deletePostById,
   likeAPost,
-  unlikeAPost
+  unlikeAPost,
+  addComments,
+  removeCommentById
 } = require('../controllers/postController');
 
 router.post('/', auth, doPost);
@@ -16,4 +18,6 @@ router.get('/:id', auth, getPostsById);
 router.delete('/:id', auth, deletePostById);
 router.put('/like/:id', auth, likeAPost);
 router.put('/unlike/:id', auth, unlikeAPost);
+router.post('/comments/:id', auth, addComments);
+router.delete('/comments/:id/:comment_id', auth, removeCommentById);
 module.exports = router;

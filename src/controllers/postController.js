@@ -74,7 +74,7 @@ const likeAPost = async (req, res, next) => {
     } else {
       post.likes.unshift({ user: req.userId });
       await post.save();
-      return res.status(200).json(post);
+      return res.status(200).json(post.likes);
     }
   } catch (error) {
     console.log(error.message);
@@ -96,18 +96,64 @@ const unlikeAPost = async (req, res, next) => {
         (like) => like.user.toString() !== req.userId
       );
       await post.save();
-      return res.status(200).json(post);
+      return res.status(200).json(post.likes);
     }
   } catch (error) {
     console.log(error.message);
     return res.status(500).json('Server Error');
   }
 };
+
+const addComments = async (req, res, next) => {
+  try {
+    const { text } = req.body;
+    const postId = req.params.id;
+    if (!text || text === '') return res.status(2400).json('Text is required.');
+    const user = await User.findById(req.userId).select('-password');
+    const post = await Post.findById(postId);
+    const newComment = {
+      text,
+      name: user.username,
+      avatar: user.avatar,
+      user: user.id
+    };
+    post.comments.unshift(newComment);
+    post.save();
+    return res.status(200).json(post.comments);
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json('Server Error');
+  }
+};
+const removeCommentById = async (req, res, next) => {
+  try {
+    const postId = req.params.id;
+    const commentId = req.params.comment_id;
+    const post = await Post.findById(postId);
+    console.log(req.userId);
+
+    post.comments = post.comments.filter((comment) => {
+      if (comment.user.toString() === req.userId) {
+        return comment._id.toString() !== commentId;
+      } else {
+        return true;
+      }
+    });
+    post.save();
+    return res.status(200).json(post.comments);
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json('Server Error');
+  }
+};
+
 module.exports = {
   doPost,
   getPosts,
   getPostsById,
   deletePostById,
   likeAPost,
-  unlikeAPost
+  unlikeAPost,
+  addComments,
+  removeCommentById
 };
