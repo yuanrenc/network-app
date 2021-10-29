@@ -1,5 +1,5 @@
-const Profile = require('../models/Profile');
-const User = require('../models/User');
+const Profile = require('../models/profile');
+const User = require('../models/user');
 const Joi = require('joi').extend(require('@joi/date'));
 
 const joiSchema = Joi.object({

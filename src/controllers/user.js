@@ -1,7 +1,7 @@
 const Joi = require('joi');
 const catchAsync = require('../utils/catchAsync');
 const gravatar = require('gravatar');
-const User = require('../models/User');
+const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const s3 = require('../utils/s3');
@@ -22,7 +22,7 @@ const updateUser = async (req, res, next) => {
     if (user) {
       return res.status(400).json('User already exists.');
     }
-    const avatar = gravatar.url(email, { s: '200', r: 'pg', d: 'mm' });
+    const avatar = `https://networkavatar-colin-v1.s3.ap-southeast-2.amazonaws.com/default.jpg`;
 
     hashedPassword = await bcrypt.hash(password, 10);
 
